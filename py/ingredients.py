@@ -51,6 +51,16 @@ class Ingredients:
         return [c for c in self.dat.columns if "ingredient" in c.lower()]
 
     @property
+    def ingredients_to_hits(self):
+        ingredients_to_hits = {}
+        for ingredient in self.unique_ingredients:
+            ingredients_to_hits[ingredient] = []
+            for brand, ingredients in self.names_to_ingredients.items():
+                if ingredient in ingredients:
+                    ingredients_to_hits[ingredient].append(self.brand_allergy_status[brand])
+        return ingredients_to_hits
+
+    @property
     def groups_to_hits(self):
         groups_to_hits = {}
         for brand, groups in self.names_to_groups.items():
@@ -61,9 +71,17 @@ class Ingredients:
         return groups_to_hits
 
     @property
-    def stats_dat(self) -> Dict[str, float]:
+    def group_stats_dat(self):
+        return self._get_stats_dat(self.groups_to_hits)
+
+    @property
+    def ingredient_stats_dat(self):
+        return self._get_stats_dat(self.ingredients_to_hits)
+
+    @staticmethod
+    def _get_stats_dat(keys_to_hits: Dict[str, List[int]]) -> pd.DataFrame:
         rows = []
-        for name, hits in self.groups_to_hits.items():
+        for name, hits in keys_to_hits.items():
             n = len(hits)
             alpha = sum(hits)
             beta = n - alpha
@@ -72,6 +90,11 @@ class Ingredients:
         return (
             pd.DataFrame(rows, columns=['group', 'posterior_mean', 'allergy_hits', 'nproducts'])
             .sort_values('posterior_mean', ascending=False))
+
+    def write_stats_xlsx(self, outpath: str):
+        with pd.ExcelWriter(outpath) as writer:
+            self.group_stats_dat.to_excel(writer, sheet_name='group_stats')
+            self.ingredient_stats_dat.to_excel(writer, sheet_name='ingredient_stats')
 
     @property
     def names_to_ingredients(self) -> Dict[str, List[str]]:
