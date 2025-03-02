@@ -1,4 +1,5 @@
 import pandas as pd
+from scipy import stats
 
 from typing import List, Dict
 
@@ -58,6 +59,19 @@ class Ingredients:
                     groups_to_hits[group] = []
                 groups_to_hits[group].append(self.brand_allergy_status[brand])
         return groups_to_hits
+
+    @property
+    def stats_dat(self) -> Dict[str, float]:
+        rows = []
+        for name, hits in self.groups_to_hits.items():
+            n = len(hits)
+            alpha = sum(hits)
+            beta = n - alpha
+            mu = round(float(stats.beta(alpha + 1, beta + 1).mean()), 2)
+            rows.append((name, mu, alpha, n))
+        return (
+            pd.DataFrame(rows, columns=['group', 'posterior_mean', 'allergy_hits', 'nproducts'])
+            .sort_values('posterior_mean', ascending=False))
 
     @property
     def names_to_ingredients(self) -> Dict[str, List[str]]:
