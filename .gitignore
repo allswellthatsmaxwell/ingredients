@@ -1,0 +1,9 @@
+plots/
+plots/
+data/
+__ipynb__
+__pycache__/
+.idea/
+__pycache__/
+data/
+.ipynb_checkpoints/
