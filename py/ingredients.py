@@ -61,6 +61,17 @@ class Ingredients:
         return ingredients_to_hits
 
     @property
+    def ingredient_to_brands(self) -> Dict[str, List[str]]:
+        ingredient_to_brands = {}
+        for brand, ingredients in self.names_to_ingredients.items():
+            for ing in ingredients:
+                if ing not in ingredient_to_brands:
+                    ingredient_to_brands[ing] = []
+                ingredient_to_brands[ing].append(brand)
+        return ingredient_to_brands
+
+
+    @property
     def groups_to_hits(self):
         groups_to_hits = {}
         for brand, groups in self.names_to_groups.items():
